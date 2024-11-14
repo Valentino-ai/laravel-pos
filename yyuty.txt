@@ -1,0 +1,11 @@
+composer create laravel/laravel:^10 namaproject
+
+npm install vue-loader@latest vue@latest vue-router@next
+
+npm install @vitejs/plugin-vue
+
+composer require laravel/sanctum
+
+php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+
+Pastikan migrasi product belakangan
