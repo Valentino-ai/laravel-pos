@@ -10,31 +10,26 @@ use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the products.
-     */
     public function index(Request $request)
     {
         $search = $request->query('search');
         
-        $query = Product::with(['size', 'category', 'material']);
+        $query = Product::with(['size', 'categorys', 'material']);
 
         if ($search) {
-            $query->where('name', 'like', '%' . $search . '%'); // Search by product name
+            $query->where('name', 'like', '%' . $search . '%');
         }
 
-        // Paginate the results
-        $products = $query->paginate(10);
+        $products = $query->paginate(5);
 
-        // Transform the products data
         $final = [];
         foreach ($products->items() as $product) {
             $final[] = [
                 'id' => $product->id,
-                'name' => $product->name, // Changed to name
+                'name' => $product->name,
                 'description' => $product->description,
                 'size' => $product->size ? $product->size->name : null,
-                'category' => $product->category ? $product->category->name : null,
+                'categorys' => $product->categorys ? $product->categorys->name : null,
                 'material' => $product->material ? $product->material->name : null,
                 'color' => $product->color,
                 'unit_price' => $product->unit_price,
@@ -42,24 +37,19 @@ class ProductController extends Controller
             ];
         }
 
-        // Set transformed data back to paginator
         $products->setCollection(collect($final));
 
-        // Return paginated response with search results
         return response()->json($products);
     }
 
-    /**
-     * Store a newly created product in storage.
-     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string', // Changed to name
+            'name' => 'required|string',
             'description' => 'nullable|string',
             'size_id' => 'required|uuid|exists:sizes,id',
             'unit_price' => 'required|numeric|min:0',
-            'category_id' => 'nullable|uuid|exists:categories,id',
+            'categorys_id' => 'nullable|uuid|exists:categorys,id',
             'color' => 'required|string',
             'material_id' => 'nullable|uuid|exists:materials,id',
             'image_url' => 'nullable|url',
@@ -71,11 +61,11 @@ class ProductController extends Controller
 
         $product = Product::create([
             'id' => (string) Str::uuid(),
-            'name' => $request->name, // Changed to name
+            'name' => $request->name,
             'description' => $request->description,
             'size_id' => $request->size_id,
             'unit_price' => $request->unit_price,
-            'category_id' => $request->category_id,
+            'categorys_id' => $request->categorys_id,
             'color' => $request->color,
             'material_id' => $request->material_id,
             'image_url' => $request->image_url,
@@ -84,12 +74,9 @@ class ProductController extends Controller
         return response()->json($product, 201);
     }
 
-    /**
-     * Display the specified product.
-     */
     public function show($id)
     {
-        $product = Product::with(['size', 'category', 'material'])->find($id);
+        $product = Product::with(['size', 'categorys', 'material'])->find($id);
 
         if (!$product) {
             return response()->json(['message' => 'Product not found'], 404);
@@ -98,10 +85,10 @@ class ProductController extends Controller
         return response()->json([
             'data' => [
                 'id' => $product->id,
-                'name' => $product->name, // Changed to name
+                'name' => $product->name,
                 'description' => $product->description,
                 'size' => $product->size ? $product->size->name : null,
-                'category' => $product->category ? $product->category->name : null,
+                'categorys' => $product->categorys ? $product->categorys->name : null,
                 'material' => $product->material ? $product->material->name : null,
                 'color' => $product->color,
                 'unit_price' => $product->unit_price,
@@ -110,9 +97,6 @@ class ProductController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified product in storage.
-     */
     public function update(Request $request, $id)
     {
         $product = Product::find($id);
@@ -122,11 +106,11 @@ class ProductController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|required|string', // Changed to name
+            'name' => 'sometimes|required|string',
             'description' => 'nullable|string',
             'size_id' => 'sometimes|required|uuid|exists:sizes,id',
             'unit_price' => 'sometimes|required|numeric|min:0',
-            'category_id' => 'nullable|uuid|exists:categories,id',
+            'categorys_id' => 'nullable|uuid|exists:categorys,id',
             'color' => 'sometimes|required|string',
             'material_id' => 'nullable|uuid|exists:materials,id',
             'image_url' => 'nullable|url',
@@ -136,14 +120,14 @@ class ProductController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $product->update($request->all());
+        $product->update([
+            ...$request->except('categorys_id'),
+            'categorys_id' => $request->categorys_id,
+        ]);
 
         return response()->json($product);
     }
 
-    /**
-     * Remove the specified product from storage.
-     */
     public function destroy($id)
     {
         $product = Product::find($id);

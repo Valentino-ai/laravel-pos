@@ -54,28 +54,28 @@ class SizeController extends Controller
     /**
      * Update the specified size in storage.
      */
-    // public function update(Request $request, $id)
-    // {
-    //     $size = Size::find($id);
+    public function update(Request $request, $id)
+    {
+        $size = Size::find($id);
 
-    //     if (!$size) {
-    //         return response()->json(['message' => 'Size not found'], 404);
-    //     }
+        if (!$size) {
+            return response()->json(['message' => 'Size not found'], 404);
+        }
 
-    //     $validator = Validator::make($request->all(), [
-    //         'name' => 'required|string|max:255',
-    //     ]);
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+        ]);
 
-    //     if ($validator->fails()) {
-    //         return response()->json(['errors' => $validator->errors()], 422);
-    //     }
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
 
-    //     $size->update([
-    //         'name' => $request->name,
-    //     ]);
+        $size->update([
+            'name' => $request->name,
+        ]);
 
-    //     return response()->json(['size' => $size, 'message' => 'Size updated successfully'], 200);
-    // }
+        return response()->json(['size' => $size, 'message' => 'Size updated successfully'], 200);
+    }
 
     /**
      * Remove the specified size from storage.

@@ -8,7 +8,7 @@
         </div>
         <button type="submit">Update Category</button>
       </form>
-      <router-link to="/dashboard/product/category">Back to Categories</router-link>
+      <router-link to="/dashboard/product/category">Back to categorys</router-link>
     </div>
   </template>
   
@@ -24,7 +24,7 @@
   
   const fetchCategory = async () => {
     try {
-      const response = await axios.get(`/api/categories/${categoryId}`);
+      const response = await axios.get(`/api/categorys/${categoryId}`);
       categoryName.value = response.data.category.name;
     } catch (error) {
       console.error('Failed to fetch category:', error);
@@ -33,7 +33,7 @@
   
   const updateCategory = async () => {
     try {
-      await axios.put(`/api/categories/${categoryId}`, { name: categoryName.value });
+      await axios.put(`/api/categorys/${categoryId}`, { name: categoryName.value });
       router.push('/dashboard/product/category'); // Redirect after successful update
     } catch (error) {
       console.error('Failed to update category:', error);

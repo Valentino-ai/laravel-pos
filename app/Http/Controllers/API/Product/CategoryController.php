@@ -10,12 +10,12 @@ use Illuminate\Support\Str;
 class CategoryController extends Controller
 {
     /**
-     * Get all categories.
+     * Get all categorys.
      */
     public function index()
     {
-        $categories = Category::all();
-        return response()->json(['categories' => $categories]);
+        $categorys = Category::all(); // Fetch all categorys
+        return response()->json(['categorys' => $categorys]); // Return 'categorys' for consistency with frontend
     }
 
     /**
@@ -23,18 +23,16 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate incoming request data
         $request->validate([
             'name' => 'required|string|max:255',
         ]);
 
-        // Create category
         $category = Category::create([
             'id' => Str::uuid(),
             'name' => $request->name,
         ]);
 
-        return response()->json(['category' => $category], 201);
+        return response()->json(['categorys' => $category], 201); // Return 'categorys' for a single resource
     }
 
     /**
@@ -42,13 +40,9 @@ class CategoryController extends Controller
      */
     public function show($id)
     {
-        $category = Category::find($id);
+        $category = Category::findOrFail($id); // Automatically returns 404 if not found
 
-        if (!$category) {
-            return response()->json(['message' => 'Category not found'], 404);
-        }
-
-        return response()->json(['category' => $category]);
+        return response()->json(['categorys' => $category]); // Return 'categorys' for single resource
     }
 
     /**
@@ -56,23 +50,17 @@ class CategoryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $category = Category::find($id);
+        $category = Category::findOrFail($id); // Automatically returns 404 if not found
 
-        if (!$category) {
-            return response()->json(['message' => 'Category not found'], 404);
-        }
-
-        // Validate incoming request data
         $request->validate([
             'name' => 'required|string|max:255',
         ]);
 
-        // Update category
         $category->update([
             'name' => $request->name,
         ]);
 
-        return response()->json(['category' => $category]);
+        return response()->json(['categorys' => $category]); // Return updated categorys
     }
 
     /**
@@ -80,13 +68,8 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        $category = Category::find($id);
+        $category = Category::findOrFail($id); // Automatically returns 404 if not found
 
-        if (!$category) {
-            return response()->json(['message' => 'Category not found'], 404);
-        }
-
-        // Delete category
         $category->delete();
 
         return response()->json(['message' => 'Category deleted successfully']);

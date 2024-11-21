@@ -8,7 +8,7 @@
         </div>
         <button type="submit">Add Category</button>
       </form>
-      <router-link to="/dashboard/product/category">Back to Categories</router-link>
+      <router-link to="/dashboard/product/category">Back to categorys</router-link>
     </div>
   </template>
   
@@ -22,7 +22,7 @@
   
   const addCategory = async () => {
     try {
-      await axios.post('/api/categories', { name: categoryName.value });
+      await axios.post('/api/categorys', { name: categoryName.value });
       router.push('/dashboard/product/category'); // Redirect to the list after successful addition
     } catch (error) {
       console.error('Failed to add category:', error);

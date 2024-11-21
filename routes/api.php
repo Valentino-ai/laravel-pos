@@ -43,18 +43,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('user/delete', [EditProfileController::class, 'destroy'])->name('user.destroy');
 
     // Routes for size management
-    Route::get('sizes', [SizeController::class, 'index']); 
-    Route::post('sizes', [SizeController::class, 'store']); 
-    Route::get('sizes/{id}', [SizeController::class, 'show']); 
-    Route::put('sizes/{id}', [SizeController::class, 'update']); 
-    Route::delete('sizes/{id}', [SizeController::class, 'destroy']); 
+    Route::get('sizes', [SizeController::class, 'index']);
+    Route::post('sizes', [SizeController::class, 'store']);
+    Route::get('sizes/{id}', [SizeController::class, 'show']);
+    Route::put('sizes/{id}', [SizeController::class, 'update']);
+    Route::delete('sizes/{id}', [SizeController::class, 'destroy']);
 
     // Routes for category management
-    Route::get('categories', [CategoryController::class, 'index']);
-    Route::post('categories', [CategoryController::class, 'store']);
-    Route::get('categories/{id}', [CategoryController::class, 'show']);
-    Route::put('categories/{id}', [CategoryController::class, 'update']);
-    Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
+    Route::get('categorys', [CategoryController::class, 'index']);
+    Route::post('categorys', [CategoryController::class, 'store']);
+    Route::get('categorys/{id}', [CategoryController::class, 'show']);
+    Route::put('categorys/{id}', [CategoryController::class, 'update']);
+    Route::delete('categorys/{id}', [CategoryController::class, 'destroy']);
 
     // Routes for product management
     Route::get('products', [ProductController::class, 'index']);       // Get all products

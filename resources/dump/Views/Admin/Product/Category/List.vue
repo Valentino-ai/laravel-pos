@@ -1,9 +1,9 @@
 <template>
     <div>
-      <h1>Categories</h1>
-      <div v-if="categories.length === 0">No categories available</div>
+      <h1>categorys</h1>
+      <div v-if="categorys.length === 0">No categorys available</div>
       <ul v-else>
-        <li v-for="(category, index) in categories" :key="category.id">
+        <li v-for="(category, index) in categorys" :key="category.id">
           {{ index + 1 }}. {{ category.name }}
           <button @click="editCategory(category.id)">Edit</button>
           <button @click="deleteCategory(category.id)">Delete</button>
@@ -18,15 +18,15 @@
   import axios from 'axios';
   import { useRouter } from 'vue-router';
   
-  const categories = ref([]);
+  const categorys = ref([]);
   const router = useRouter();
   
   const fetchCategories = async () => {
     try {
-      const response = await axios.get('/api/categories');
-      categories.value = response.data.categories;
+      const response = await axios.get('/api/categorys');
+      categorys.value = response.data.categorys;
     } catch (error) {
-      console.error('Failed to fetch categories:', error);
+      console.error('Failed to fetch categorys:', error);
     }
   };
   
@@ -36,7 +36,7 @@
   
   const deleteCategory = async (id) => {
     try {
-      await axios.delete(`/api/categories/${id}`);
+      await axios.delete(`/api/categorys/${id}`);
       fetchCategories(); // Refresh the list after deletion
     } catch (error) {
       console.error('Failed to delete category:', error);

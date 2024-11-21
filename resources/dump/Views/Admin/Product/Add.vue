@@ -1,12 +1,12 @@
 <template>
     <div>
-        <h1>Edit Product</h1>
+        <h1>Add New Product</h1>
 
         <form @submit.prevent="submitForm">
             <!-- Product Type -->
             <div>
                 <label for="name">Product Type</label>
-                <input type="text" v-model="product.type" id="name" required />
+                <input type="text" v-model="product.name" id="name" required />
             </div>
 
             <!-- Product Description -->
@@ -27,7 +27,7 @@
             <div>
                 <label for="category_id">Category</label>
                 <select v-model="product.category_id" id="category_id" required>
-                    <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}
+                    <option v-for="category in categorys" :key="category.id" :value="category.id">{{ category.name }}
                     </option>
                 </select>
             </div>
@@ -52,6 +52,7 @@
                 <label for="image_url">Image</label>
                 <input type="file" @change="handleFileUpload" id="image_url" />
             </div>
+
             <!-- Unit Price -->
             <div>
                 <label for="unit_price">Unit Price</label>
@@ -59,21 +60,18 @@
             </div>
 
             <!-- Submit Button -->
-            <button type="submit">Update Product</button>
+            <button type="submit">Add Product</button>
         </form>
     </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
+import { useRouter } from 'vue-router';
 
 const router = useRouter();
-const route = useRoute();
-
 const product = ref({
-    id: '',
     name: '',
     description: '',
     size_id: '',
@@ -85,14 +83,13 @@ const product = ref({
 });
 
 const sizes = ref([]);
-const categories = ref([]);
+const categorys = ref([]);
 const materials = ref([]);
 
 onMounted(async () => {
     await fetchSizes();
     await fetchCategories();
     await fetchMaterials();
-    await fetchProduct();
 });
 
 async function fetchSizes() {
@@ -106,10 +103,10 @@ async function fetchSizes() {
 
 async function fetchCategories() {
     try {
-        const response = await axios.get('/api/categories');
-        categories.value = response.data.categories;
+        const response = await axios.get('/api/categorys');
+        categorys.value = response.data.categorys;
     } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error('Error fetching categorys:', error);
     }
 }
 
@@ -122,23 +119,12 @@ async function fetchMaterials() {
     }
 }
 
-async function fetchProduct() {
-    const { id } = route.params;
-    try {
-        const response = await axios.get(`/api/products/${id}`);
-        product.value = response.data.data; 
-    } catch (error) {
-        console.error('Error fetching product:', error);
-    }
-}
-
-
 async function submitForm() {
     try {
-        await axios.put(`/api/products/${product.value.id}`, product.value);
+        await axios.post('/api/products', product.value);
         router.push({ name: 'ProductList' });
     } catch (error) {
-        console.error('Error updating product:', error);
+        console.error('Error adding product:', error);
     }
 }
 </script>

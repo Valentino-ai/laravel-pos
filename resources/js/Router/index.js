@@ -1,28 +1,30 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import NotFound from '../Components/NotFound.vue';
+import NotFound from '../Pages/NotFound.vue';
 
-import homeAdminIndex from '../Components/Views/Admin/Home/Index.vue';
-import homePageIndex from '../Components/Views/Pages/Home/Index.vue';
+import homeAdminIndex from '../Pages/Masterdata/HomeIndex.vue';
+import homePageIndex from '..//Pages/Home/Index.vue';
 
-import register from '../Components/Views/Auth/register.vue';
-import login from '../Components/Views/Auth/Login.vue';
+import register from '../Pages/Auth/Register.vue';
+import login from '../Pages/Auth/Login.vue';
 
-import editProfile from '../Components/Views/Admin/Profile/Edit.vue';
+import editProfile from '../Pages/Account/Edit.vue';
 
-import sizeAdd from '../Components/Views/Admin/Product/Size/Add.vue';
-import sizeList from '../Components/Views/Admin/Product/Size/List.vue';
+// import sizeAdd from '../Components/Views/Admin/Product/Size/Add.vue';
+// import sizeList from '../Components/Views/Admin/Product/Size/List.vue';
 
-import categoryAdd from '../Components/Views/Admin/Product/Category/Add.vue';
-import categoryList from '../Components/Views/Admin/Product/Category/List.vue';
-import categoryEdit from '../Components/Views/Admin/Product/Category/Edit.vue';
+// import categoryAdd from '../Components/Views/Admin/Product/Category/Add.vue';
+// import categoryList from '../Components/Views/Admin/Product/Category/List.vue';
+// import categoryEdit from '../Components/Views/Admin/Product/Category/Edit.vue';
 
-import materialAdd from '../Components/Views/Admin/Product/Material/Add.vue';
-import materialList from '../Components/Views/Admin/Product/Material/List.vue';
-import materialEdit from '../Components/Views/Admin/Product/Material/Edit.vue';
+import RefMasterdata from '../Components/RefMasterdata.vue'
 
-import productAdd from '../Components/Views/Admin/Product/Add.vue';
-import productList from '../Components/Views/Admin/Product/List.vue';
-import productEdit from '../Components/Views/Admin/Product/Edit.vue';
+import materialAdd from '../Pages/Masterdata/Product/Material/MaterialAdd.vue';
+import materialList from '../Pages/Masterdata/Product/Material/MaterialIndex.vue';
+import materialEdit from '../Pages/Masterdata/Product/Material/MaterialEdit.vue';
+
+import productAdd from '../Pages/Masterdata/Product/ProductAdd.vue';
+import productList from '../Pages/Masterdata/Product/ProductIndex.vue';
+import productEdit from '../Pages/Masterdata/Product/ProductEdit.vue';
 
 const routes = [
   {
@@ -58,39 +60,39 @@ const routes = [
     meta: { requiresAuth: true },
   },
 
-  // Routes for managing sizes
-  {
-    path: '/dashboard/product/size',
-    name: 'SizeList',
-    component: sizeList,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/dashboard/product/size/add',
-    name: 'SizeAdd',
-    component: sizeAdd,
-    meta: { requiresAuth: true },
-  },
+  // // Routes for managing sizes
+  // {
+  //   path: '/dashboard/product/size',
+  //   name: 'SizeList',
+  //   component: sizeList,
+  //   meta: { requiresAuth: true },
+  // },
+  // {
+  //   path: '/dashboard/product/size/add',
+  //   name: 'SizeAdd',
+  //   component: sizeAdd,
+  //   meta: { requiresAuth: true },
+  // },
 
-  // Routes for managing categories
-  {
-    path: '/dashboard/product/category/add',
-    name: 'CategoryAdd',
-    component: categoryAdd,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/dashboard/product/category',
-    name: 'CategoryList',
-    component: categoryList,
-    meta: { requiresAuth: true },
-  },
-  {
-    path: '/dashboard/product/category/edit/:id',
-    name: 'CategoryEdit',
-    component: categoryEdit,
-    meta: { requiresAuth: true },
-  },
+  // // Routes for managing categorys
+  // {
+  //   path: '/dashboard/product/category/add',
+  //   name: 'CategoryAdd',
+  //   component: categoryAdd,
+  //   meta: { requiresAuth: true },
+  // },
+  // {
+  //   path: '/dashboard/product/category',
+  //   name: 'CategoryList',
+  //   component: categoryList,
+  //   meta: { requiresAuth: true },
+  // },
+  // {
+  //   path: '/dashboard/product/category/edit/:id',
+  //   name: 'CategoryEdit',
+  //   component: categoryEdit,
+  //   meta: { requiresAuth: true },
+  // },
 
   // Routes for managing materials
   {
@@ -129,6 +131,28 @@ const routes = [
     path: '/dashboard/product/edit/:id',
     name: 'ProductEdit',
     component: productEdit,
+    meta: { requiresAuth: true },
+  },
+
+  {
+    path: '/dashboard/product/:resourceName',  // Dynamic route for List view
+    name: 'ResourceList',
+    component: RefMasterdata,
+    props: true,  // Pass route params as props to RefMasterdata
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/dashboard/product/:resourceName/add',
+    name: 'ResourceAdd',
+    component: RefMasterdata,
+    props: true,  // Pass route params as props to RefMasterdata
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/dashboard/product/:resourceName/edit/:id',
+    name: 'ResourceEdit',
+    component: RefMasterdata,
+    props: true,  // Pass route params as props to RefMasterdata
     meta: { requiresAuth: true },
   },
 

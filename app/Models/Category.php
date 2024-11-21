@@ -10,6 +10,9 @@ class Category extends Model
 {
     use HasFactory, HasUuids;
 
+    // Specify the custom table name
+    protected $table = 'categorys';
+
     /**
      * The attributes that are mass assignable.
      *

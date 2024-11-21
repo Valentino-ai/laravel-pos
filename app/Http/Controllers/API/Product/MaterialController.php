@@ -27,14 +27,13 @@ class MaterialController extends Controller
         // Validate input
         $request->validate([
             'name' => 'required|string|max:255',
-            'stock' => 'required|integer|min:0',  // Stock validation
+            'stock' => 'required|integer|min:0',
         ]);
 
-        // Create new material with UUID and stock
         $material = Material::create([
-            'id' => Str::uuid(),  // Generate UUID for the material
+            'id' => Str::uuid(),
             'name' => $request->name,
-            'stock' => $request->stock,  // Add stock value
+            'stock' => $request->stock,
         ]);
 
         return response()->json(['message' => 'Material created successfully', 'material' => $material], 201);
@@ -45,7 +44,6 @@ class MaterialController extends Controller
      */
     public function show($id)
     {
-        // Retrieve material by ID
         $material = Material::findOrFail($id);
         return response()->json(['material' => $material]);
     }
@@ -55,10 +53,10 @@ class MaterialController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Validate input (only fields that are passed in the request)
+        
         $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'stock' => 'sometimes|required|integer|min:0',  // Stock validation for updates
+            'stock' => 'sometimes|required|integer|min:0',  
         ]);
 
         // Find and update the material
@@ -73,7 +71,6 @@ class MaterialController extends Controller
      */
     public function destroy($id)
     {
-        // Find and delete the material
         $material = Material::findOrFail($id);
         $material->delete();
 
