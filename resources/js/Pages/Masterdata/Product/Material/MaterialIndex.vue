@@ -6,38 +6,47 @@
           <h4 class="card-title">Materials</h4>
           <p class="card-description"> Manage your materials here.</p>
 
+          <!-- Circular Loading Indicator -->
           <div v-if="loading" class="text-center">
-            <span>Loading materials...</span>
+            <div class="spinner-border text-primary" role="status">
+              <span class="sr-only">Loading materials...</span>
+            </div>
           </div>
 
+          <!-- Error Message -->
           <div v-if="errorMessage" class="alert alert-danger">
             {{ errorMessage }}
           </div>
 
-          <table v-else class="table table-striped">
+          <!-- Materials Table -->
+          <table v-if="!loading && materials.length > 0" class="table table-striped">
             <thead>
               <tr>
-                <th>#</th>
+                <th>No</th>
                 <th>Material Name</th>
                 <th>Stock</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-if="materials.length === 0">
-                <td colspan="4" class="text-center">No materials available</td>
-              </tr>
               <tr v-for="(material, index) in materials" :key="material.id">
                 <td>{{ index + 1 }}</td>
                 <td>{{ material.name }}</td>
                 <td>{{ material.stock }}</td>
                 <td>
-                  <button @click="editMaterial(material.id)" class="btn btn-warning btn-sm">Edit</button>
+                  <button @click="editMaterial(material.id)" class="btn btn-warning btn-sm me-2">Edit</button>
                   <button @click="deleteMaterial(material.id)" class="btn btn-danger btn-sm">Delete</button>
                 </td>
+
               </tr>
             </tbody>
           </table>
+
+          <!-- No Materials Message -->
+          <div v-if="!loading && materials.length === 0" class="text-center">
+            No materials available
+          </div>
+
 
           <router-link to="/dashboard/product/material/add" class="btn btn-primary mt-3">Add Material</router-link>
         </div>

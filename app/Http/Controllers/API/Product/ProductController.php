@@ -13,8 +13,8 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
-        
-        $query = Product::with(['size', 'categorys', 'material']);
+
+        $query = Product::with(['size', 'category', 'material']);  // Fixed relationship key for category
 
         if ($search) {
             $query->where('name', 'like', '%' . $search . '%');
@@ -29,7 +29,7 @@ class ProductController extends Controller
                 'name' => $product->name,
                 'description' => $product->description,
                 'size' => $product->size ? $product->size->name : null,
-                'categorys' => $product->categorys ? $product->categorys->name : null,
+                'category' => $product->category ? $product->category->name : null,  // Fixed relationship key
                 'material' => $product->material ? $product->material->name : null,
                 'color' => $product->color,
                 'unit_price' => $product->unit_price,
@@ -49,14 +49,22 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'size_id' => 'required|uuid|exists:sizes,id',
             'unit_price' => 'required|numeric|min:0',
-            'categorys_id' => 'nullable|uuid|exists:categorys,id',
+            'category_id' => 'nullable|uuid|exists:categorys,id',
             'color' => 'required|string',
             'material_id' => 'nullable|uuid|exists:materials,id',
-            'image_url' => 'nullable|url',
+            'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',  // Allow up to 10MB
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        if ($request->hasFile('image_url')) {
+            $image = $request->file('image_url');
+            $path = $image->store('products', 'public');
+            $publicPath = url("storage/{$path}");
+        } else {
+            return response()->json(['message' => 'No file received'], 400);
         }
 
         $product = Product::create([
@@ -65,18 +73,20 @@ class ProductController extends Controller
             'description' => $request->description,
             'size_id' => $request->size_id,
             'unit_price' => $request->unit_price,
-            'categorys_id' => $request->categorys_id,
+            'category_id' => $request->category_id,
             'color' => $request->color,
             'material_id' => $request->material_id,
-            'image_url' => $request->image_url,
+            'image_url' => $publicPath,
         ]);
 
         return response()->json($product, 201);
     }
 
+
+
     public function show($id)
     {
-        $product = Product::with(['size', 'categorys', 'material'])->find($id);
+        $product = Product::with(['size', 'category', 'material'])->find($id);  // Fixed relationship key for category
 
         if (!$product) {
             return response()->json(['message' => 'Product not found'], 404);
@@ -88,7 +98,7 @@ class ProductController extends Controller
                 'name' => $product->name,
                 'description' => $product->description,
                 'size' => $product->size ? $product->size->name : null,
-                'categorys' => $product->categorys ? $product->categorys->name : null,
+                'category' => $product->category ? $product->category->name : null,  // Fixed relationship key
                 'material' => $product->material ? $product->material->name : null,
                 'color' => $product->color,
                 'unit_price' => $product->unit_price,
@@ -99,45 +109,30 @@ class ProductController extends Controller
 
     public function update(Request $request, $id)
     {
-        $product = Product::find($id);
-
-        if (!$product) {
-            return response()->json(['message' => 'Product not found'], 404);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|required|string',
+        // Validate incoming data
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'size_id' => 'sometimes|required|uuid|exists:sizes,id',
-            'unit_price' => 'sometimes|required|numeric|min:0',
-            'categorys_id' => 'nullable|uuid|exists:categorys,id',
-            'color' => 'sometimes|required|string',
-            'material_id' => 'nullable|uuid|exists:materials,id',
-            'image_url' => 'nullable|url',
+            'size_id' => 'required|exists:sizes,id',
+            'category_id' => 'required|exists:categorys,id',
+            'material_id' => 'nullable|exists:materials,id',
+            'color' => 'required|string|max:50',
+            'unit_price' => 'required|numeric|min:0',
+            'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        // Find product by ID and update
+        $product = Product::findOrFail($id);
+        $product->update($validatedData);
+
+        // Handle image upload if a new image is provided
+        if ($request->hasFile('image_url')) {
+            // Store image and update product with new path
+            $path = $request->file('image_url')->store('products', 'public');
+            $product->image_url = $path;
+            $product->save();
         }
 
-        $product->update([
-            ...$request->except('categorys_id'),
-            'categorys_id' => $request->categorys_id,
-        ]);
-
-        return response()->json($product);
-    }
-
-    public function destroy($id)
-    {
-        $product = Product::find($id);
-
-        if (!$product) {
-            return response()->json(['message' => 'Product not found'], 404);
-        }
-
-        $product->delete();
-
-        return response()->json(['message' => 'Product deleted successfully']);
+        return response()->json(['data' => $product], 200);
     }
 }

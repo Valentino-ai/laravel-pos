@@ -5,11 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Product extends Model
+class CheckoutDetail extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use HasFactory, HasUuids;
 
     /**
      * The attributes that are mass assignable.
@@ -17,14 +16,11 @@ class Product extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'description',
-        'size_id',
+        'checkout_id',
+        'product_id',
+        'quantity',
         'unit_price',
-        'category_id',
-        'color',
-        'material_id',
-        'image_url',
+        'subtotal',
     ];
 
     /**
@@ -45,22 +41,15 @@ class Product extends Model
      * Relationships.
      */
 
-    // Relationship to the Size model
-    public function size()
+    // Belongs to a Checkout
+    public function checkout()
     {
-        return $this->belongsTo(Size::class);
+        return $this->belongsTo(Checkout::class);
     }
 
-    // Relationship to the Category model
-     public function category()
+    // Belongs to a Product
+    public function product()
     {
-        return $this->belongsTo(Category::class, 'category_id');
-    }
-
-
-    // Relationship to the Material model
-    public function material()
-    {
-        return $this->belongsTo(Material::class);
+        return $this->belongsTo(Product::class);
     }
 }

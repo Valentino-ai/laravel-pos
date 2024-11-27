@@ -1,67 +1,124 @@
 <template>
-    <div>
-        <h1>Add New Product</h1>
-        <form @submit.prevent="submitForm">
-            <div>
-                <label for="name">Product Type</label>
-                <input type="text" v-model="product.name" id="name" required />
+    <DashboardLayout>
+        <div class="container">
+            <!-- Back Button -->
+            <div class="p-3 mb-3">
+                <router-link to="/dashboard/product" class="btn btn-success btn-sm">
+                    <i class="mdi mdi-arrow-left"></i> Back to Product List
+                </router-link>
             </div>
-            <div>
-                <label for="description">Description</label>
-                <textarea v-model="product.description" id="description"></textarea>
+
+            <div class="col-md-8 grid-margin stretch-card">
+                <!-- Card for Add Product Form -->
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Add New Product</h4>
+                        <p class="card-description">Fill in the details to add a new product</p>
+
+                        <form @submit.prevent="addProduct" class="forms-sample">
+                            <!-- Product Type -->
+                            <div class="form-group">
+                                <label for="name">Product Type</label>
+                                <input type="text" v-model="product.name" class="form-control" id="name"
+                                    placeholder="Enter product type" required />
+                            </div>
+
+                            <!-- Description -->
+                            <div class="form-group">
+                                <label for="description">Description</label>
+                                <textarea v-model="product.description" class="form-control" id="description"
+                                    placeholder="Enter product description"></textarea>
+                            </div>
+
+                            <!-- Size -->
+                            <div class="form-group">
+                                <label for="size_id">Size</label>
+                                <select v-model="product.size_id" class="form-control" id="size_id" required>
+                                    <option value="" disabled>Select a size</option>
+                                    <option v-for="size in sizes" :key="size.id" :value="size.id">
+                                        {{ size.name }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Category -->
+                            <div class="form-group">
+                                <label for="category_id">Category</label>
+                                <select v-model="product.category_id" class="form-control" id="category_id" required>
+                                    <option value="" disabled>Select a category</option>
+                                    <option v-for="category in categorys" :key="category.id" :value="category.id">
+                                        {{ category.name }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Material -->
+                            <div class="form-group">
+                                <label for="material_id">Material</label>
+                                <select v-model="product.material_id" class="form-control" id="material_id">
+                                    <option value="" disabled>Select a material</option>
+                                    <option v-for="material in materials" :key="material.id" :value="material.id">
+                                        {{ material.name }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Color -->
+                            <div class="form-group">
+                                <label for="color">Color</label>
+                                <input type="text" v-model="product.color" class="form-control" id="color"
+                                    placeholder="Enter product color" required />
+                            </div>
+
+                            <!-- Image Upload -->
+                            <div class="form-group">
+                                <label for="image_url">Image</label>
+                                <input type="file" class="form-control" @change="handleFileChange" id="image_url" />
+                                <!-- Image Preview -->
+                                <div v-if="imagePreview" class="mt-3">
+                                    <img :src="imagePreview" alt="Image preview" class="img-fluid" />
+                                </div>
+                            </div>
+
+                            <!-- Unit Price -->
+                            <div class="form-group">
+                                <label for="unit_price">Unit Price</label>
+                                <input type="number" v-model="product.unit_price" class="form-control" id="unit_price"
+                                    placeholder="Enter unit price" required />
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-gradient-primary me-2">
+                                Add Product
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <div>
-                <label for="size_id">Size</label>
-                <select v-model="product.size_id" id="size_id" required>
-                    <option v-for="size in sizes" :key="size.id" :value="size.id">{{ size.name }}</option>
-                </select>
-            </div>
-            <div>
-                <label for="categorys_id">Category</label>
-                <select v-model="product.categorys_id" id="categorys_id" required>
-                    <option v-for="category in categorys" :key="category.id" :value="category.id">{{ category.name }}</option>
-                </select>
-            </div>
-            <div>
-                <label for="material_id">Material</label>
-                <select v-model="product.material_id" id="material_id">
-                    <option v-for="material in materials" :key="material.id" :value="material.id">{{ material.name }}</option>
-                </select>
-            </div>
-            <div>
-                <label for="color">Color</label>
-                <input type="text" v-model="product.color" id="color" required />
-            </div>
-            <div>
-                <label for="image_url">Image</label>
-                <input type="file" @change="handleFileUpload" id="image_url" />
-            </div>
-            <div>
-                <label for="unit_price">Unit Price</label>
-                <input type="number" v-model="product.unit_price" id="unit_price" required />
-            </div>
-            <button type="submit">Add Product</button>
-        </form>
-    </div>
+        </div>
+    </DashboardLayout>
 </template>
+
 
 <script setup>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
+import DashboardLayout from '../../../layouts/DashboardLayout.vue';
 
 const router = useRouter();
 const product = ref({
     name: '',
     description: '',
     size_id: '',
-    categorys_id: '',
+    category_id: '',
     material_id: '',
     color: '',
-    image_url: '',
     unit_price: 0,
 });
 
+const imageFile = ref(null);
+const imagePreview = ref(null); // Store the preview URL
 const sizes = ref([]);
 const categorys = ref([]);
 const materials = ref([]);
@@ -99,15 +156,31 @@ async function fetchMaterials() {
     }
 }
 
-async function submitForm() {
+function handleFileChange(event) {
+    const file = event.target.files[0];
+    if (file) {
+        imageFile.value = file;
+        imagePreview.value = URL.createObjectURL(file); // Generate preview URL
+    }
+}
+
+async function addProduct() {
+    const formData = new FormData();
+    for (const [key, value] of Object.entries(product.value)) {
+        formData.append(key, value);
+    }
+    if (imageFile.value) {
+        formData.append('image_url', imageFile.value);
+    }
     try {
-        await axios.post('/api/products', {
-            ...product.value,
-            category_id: product.value.categorys_id,
+        await axios.post('/api/products', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
         });
         router.push({ name: 'ProductList' });
     } catch (error) {
-        console.error('Error adding product:', error);
+        console.error('Error adding product:', error.response ? error.response.data : error);
     }
 }
 </script>

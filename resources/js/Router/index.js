@@ -2,21 +2,14 @@ import { createRouter, createWebHistory } from 'vue-router';
 import NotFound from '../Pages/NotFound.vue';
 
 import homeAdminIndex from '../Pages/Masterdata/HomeIndex.vue';
-import homePageIndex from '..//Pages/Home/Index.vue';
+import homePageIndex from '../Pages/Home/Index.vue';
 
 import register from '../Pages/Auth/Register.vue';
 import login from '../Pages/Auth/Login.vue';
 
 import editProfile from '../Pages/Account/Edit.vue';
 
-// import sizeAdd from '../Components/Views/Admin/Product/Size/Add.vue';
-// import sizeList from '../Components/Views/Admin/Product/Size/List.vue';
-
-// import categoryAdd from '../Components/Views/Admin/Product/Category/Add.vue';
-// import categoryList from '../Components/Views/Admin/Product/Category/List.vue';
-// import categoryEdit from '../Components/Views/Admin/Product/Category/Edit.vue';
-
-import RefMasterdata from '../Components/RefMasterdata.vue'
+import RefMasterdata from '../Components/RefMasterdata.vue';
 
 import materialAdd from '../Pages/Masterdata/Product/Material/MaterialAdd.vue';
 import materialList from '../Pages/Masterdata/Product/Material/MaterialIndex.vue';
@@ -26,7 +19,11 @@ import productAdd from '../Pages/Masterdata/Product/ProductAdd.vue';
 import productList from '../Pages/Masterdata/Product/ProductIndex.vue';
 import productEdit from '../Pages/Masterdata/Product/ProductEdit.vue';
 
+// Import the Checkout Page
+import checkoutPage from '../Pages/Masterdata/Checkout/Checkout.vue';
+
 const routes = [
+  // Home and Dashboard Routes
   {
     path: '/dashboard/',
     component: homeAdminIndex,
@@ -40,7 +37,7 @@ const routes = [
     meta: { requiresAuth: false },
   },
 
-  // Routes for Auth
+  // Authentication Routes
   {
     path: '/login',
     name: 'Login',
@@ -59,40 +56,6 @@ const routes = [
     component: editProfile,
     meta: { requiresAuth: true },
   },
-
-  // // Routes for managing sizes
-  // {
-  //   path: '/dashboard/product/size',
-  //   name: 'SizeList',
-  //   component: sizeList,
-  //   meta: { requiresAuth: true },
-  // },
-  // {
-  //   path: '/dashboard/product/size/add',
-  //   name: 'SizeAdd',
-  //   component: sizeAdd,
-  //   meta: { requiresAuth: true },
-  // },
-
-  // // Routes for managing categorys
-  // {
-  //   path: '/dashboard/product/category/add',
-  //   name: 'CategoryAdd',
-  //   component: categoryAdd,
-  //   meta: { requiresAuth: true },
-  // },
-  // {
-  //   path: '/dashboard/product/category',
-  //   name: 'CategoryList',
-  //   component: categoryList,
-  //   meta: { requiresAuth: true },
-  // },
-  // {
-  //   path: '/dashboard/product/category/edit/:id',
-  //   name: 'CategoryEdit',
-  //   component: categoryEdit,
-  //   meta: { requiresAuth: true },
-  // },
 
   // Routes for managing materials
   {
@@ -134,25 +97,34 @@ const routes = [
     meta: { requiresAuth: true },
   },
 
+  // Checkout Page Route
   {
-    path: '/dashboard/product/:resourceName',  // Dynamic route for List view
+    path: '/dashboard/checkout',
+    name: 'Checkout',
+    component: checkoutPage,
+    meta: { requiresAuth: true },
+  },
+
+  // Dynamic routes for reusable RefMasterdata
+  {
+    path: '/dashboard/product/:resourceName', 
     name: 'ResourceList',
     component: RefMasterdata,
-    props: true,  // Pass route params as props to RefMasterdata
+    props: true,
     meta: { requiresAuth: true },
   },
   {
     path: '/dashboard/product/:resourceName/add',
     name: 'ResourceAdd',
     component: RefMasterdata,
-    props: true,  // Pass route params as props to RefMasterdata
+    props: true,
     meta: { requiresAuth: true },
   },
   {
     path: '/dashboard/product/:resourceName/edit/:id',
     name: 'ResourceEdit',
     component: RefMasterdata,
-    props: true,  // Pass route params as props to RefMasterdata
+    props: true,
     meta: { requiresAuth: true },
   },
 
@@ -168,6 +140,7 @@ const router = createRouter({
   routes,
 });
 
+// Route Guards
 router.beforeEach((to, from, next) => {
   const isAuthenticated = !!localStorage.getItem('token');
 
