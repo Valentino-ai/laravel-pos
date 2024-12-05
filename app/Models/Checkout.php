@@ -5,28 +5,25 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Support\Str;
 
 class Checkout extends Model
 {
     use HasFactory, HasUuids;
 
     /**
-     * The attributes that are mass assignable.
+     * The table associated with the model.
      *
-     * @var array<int, string>
+     * @var string
      */
-    protected $fillable = [
-        'user_id',
-        'total_amount',
-        'payment_status',
-    ];
+    protected $table = 'checkout';
 
     /**
-     * Indicates if the IDs are auto-incrementing.
+     * The primary key associated with the table.
      *
-     * @var bool
+     * @var string
      */
-    public $incrementing = false;
+    protected $primaryKey = 'id';
 
     /**
      * The "type" of the primary key ID.
@@ -36,18 +33,46 @@ class Checkout extends Model
     protected $keyType = 'string';
 
     /**
-     * Relationships.
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
      */
+    public $incrementing = false;
 
-    // Belongs to User
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'products',
+        'customer_name',
+        'code',
+    ];
 
-    // Has many Checkout Details
-    public function checkoutDetails()
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'products' => 'array', // Automatically casts JSON to array
+    ];
+
+    /**
+     * Generate a unique code for the checkout.
+     *
+     * @return string
+     */
+    public static function generateUniqueCode()
     {
-        return $this->hasMany(CheckoutDetail::class);
+        $datePrefix = now()->format('Ymd');
+        $existingCodes = static::where('code', 'LIKE', "$datePrefix%")->pluck('code');
+
+        $nextNumber = $existingCodes
+            ->map(fn($code) => (int) Str::afterLast($code, '_'))
+            ->max() + 1;
+
+        return "{$datePrefix}_{$nextNumber}";
     }
 }

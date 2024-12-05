@@ -6,6 +6,8 @@ import '../css/Assets/font-awesome/css/font-awesome.min.css'
 import '../css/Assets/select2/select2.min.css'
 import '../css/Assets/select2-bootstrap-theme/select2-bootstrap.min.css'
 
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+
 
 import { createApp } from 'vue';
 import app from './Pages/App.vue';

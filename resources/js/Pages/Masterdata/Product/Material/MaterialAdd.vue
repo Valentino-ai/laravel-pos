@@ -9,7 +9,6 @@
           </div>
 
           <div class="col-md-8 grid-margin stretch-card">
-              <!-- Card for Add Material Form -->
               <div class="card">
                   <div class="card-body">
                       <h4 class="card-title">Add New Material</h4>

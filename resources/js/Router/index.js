@@ -19,13 +19,12 @@ import productAdd from '../Pages/Masterdata/Product/ProductAdd.vue';
 import productList from '../Pages/Masterdata/Product/ProductIndex.vue';
 import productEdit from '../Pages/Masterdata/Product/ProductEdit.vue';
 
-// Import the Checkout Page
 import checkoutPage from '../Pages/Masterdata/Checkout/Checkout.vue';
+import checkoutHistory from '../Pages/Masterdata/Checkout/CheckoutHistory.vue';
 
 const routes = [
-  // Home and Dashboard Routes
   {
-    path: '/dashboard/',
+    path: '/dashboard/home',
     component: homeAdminIndex,
     name: 'AdminHome',
     meta: { requiresAuth: true },
@@ -36,8 +35,6 @@ const routes = [
     name: 'Home',
     meta: { requiresAuth: false },
   },
-
-  // Authentication Routes
   {
     path: '/login',
     name: 'Login',
@@ -56,8 +53,6 @@ const routes = [
     component: editProfile,
     meta: { requiresAuth: true },
   },
-
-  // Routes for managing materials
   {
     path: '/dashboard/product/material',
     name: 'MaterialList',
@@ -76,8 +71,6 @@ const routes = [
     component: materialEdit,
     meta: { requiresAuth: true },
   },
-
-  // Routes for managing products
   {
     path: '/dashboard/product',
     name: 'ProductList',
@@ -96,18 +89,20 @@ const routes = [
     component: productEdit,
     meta: { requiresAuth: true },
   },
-
-  // Checkout Page Route
   {
     path: '/dashboard/checkout',
     name: 'Checkout',
     component: checkoutPage,
     meta: { requiresAuth: true },
   },
-
-  // Dynamic routes for reusable RefMasterdata
   {
-    path: '/dashboard/product/:resourceName', 
+    path: '/dashboard/checkout/history',
+    name: 'CheckoutHistory',
+    component: checkoutHistory,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/dashboard/product/:resourceName',
     name: 'ResourceList',
     component: RefMasterdata,
     props: true,
@@ -127,8 +122,6 @@ const routes = [
     props: true,
     meta: { requiresAuth: true },
   },
-
-  // Fallback route for 404
   {
     path: '/:pathMatch(.*)*',
     component: NotFound,
@@ -140,7 +133,6 @@ const router = createRouter({
   routes,
 });
 
-// Route Guards
 router.beforeEach((to, from, next) => {
   const isAuthenticated = !!localStorage.getItem('token');
 

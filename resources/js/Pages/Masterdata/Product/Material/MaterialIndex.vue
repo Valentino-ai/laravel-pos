@@ -6,19 +6,16 @@
           <h4 class="card-title">Materials</h4>
           <p class="card-description"> Manage your materials here.</p>
 
-          <!-- Circular Loading Indicator -->
           <div v-if="loading" class="text-center">
             <div class="spinner-border text-primary" role="status">
               <span class="sr-only">Loading materials...</span>
             </div>
           </div>
 
-          <!-- Error Message -->
           <div v-if="errorMessage" class="alert alert-danger">
             {{ errorMessage }}
           </div>
 
-          <!-- Materials Table -->
           <table v-if="!loading && materials.length > 0" class="table table-striped">
             <thead>
               <tr>
@@ -42,7 +39,6 @@
             </tbody>
           </table>
 
-          <!-- No Materials Message -->
           <div v-if="!loading && materials.length === 0" class="text-center">
             No materials available
           </div>

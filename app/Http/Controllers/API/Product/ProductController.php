@@ -13,8 +13,7 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $search = $request->query('search');
-
-        $query = Product::with(['size', 'category', 'material']);  // Fixed relationship key for category
+        $query = Product::with(['size', 'category', 'material']);
 
         if ($search) {
             $query->where('name', 'like', '%' . $search . '%');
@@ -29,7 +28,7 @@ class ProductController extends Controller
                 'name' => $product->name,
                 'description' => $product->description,
                 'size' => $product->size ? $product->size->name : null,
-                'category' => $product->category ? $product->category->name : null,  // Fixed relationship key
+                'category' => $product->category ? $product->category->name : null,
                 'material' => $product->material ? $product->material->name : null,
                 'color' => $product->color,
                 'unit_price' => $product->unit_price,
@@ -52,7 +51,7 @@ class ProductController extends Controller
             'category_id' => 'nullable|uuid|exists:categorys,id',
             'color' => 'required|string',
             'material_id' => 'nullable|uuid|exists:materials,id',
-            'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',  // Allow up to 10MB
+            'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
 
         if ($validator->fails()) {
@@ -82,11 +81,9 @@ class ProductController extends Controller
         return response()->json($product, 201);
     }
 
-
-
     public function show($id)
     {
-        $product = Product::with(['size', 'category', 'material'])->find($id);  // Fixed relationship key for category
+        $product = Product::with(['size', 'category', 'material'])->find($id);
 
         if (!$product) {
             return response()->json(['message' => 'Product not found'], 404);
@@ -98,7 +95,7 @@ class ProductController extends Controller
                 'name' => $product->name,
                 'description' => $product->description,
                 'size' => $product->size ? $product->size->name : null,
-                'category' => $product->category ? $product->category->name : null,  // Fixed relationship key
+                'category' => $product->category ? $product->category->name : null,
                 'material' => $product->material ? $product->material->name : null,
                 'color' => $product->color,
                 'unit_price' => $product->unit_price,
@@ -109,7 +106,6 @@ class ProductController extends Controller
 
     public function update(Request $request, $id)
     {
-        // Validate incoming data
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -121,18 +117,28 @@ class ProductController extends Controller
             'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Find product by ID and update
         $product = Product::findOrFail($id);
         $product->update($validatedData);
 
-        // Handle image upload if a new image is provided
         if ($request->hasFile('image_url')) {
-            // Store image and update product with new path
             $path = $request->file('image_url')->store('products', 'public');
-            $product->image_url = $path;
+            $product->image_url = url("storage/{$path}");
             $product->save();
         }
 
-        return response()->json(['data' => $product], 200);
+        return response()->json(['data' => $product, 'message' => 'Product updated successfully'], 200);
+    }
+
+    public function destroy($id)
+    {
+        $product = Product::find($id);
+
+        if (!$product) {
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+
+        $product->delete();
+
+        return response()->json(['message' => 'Product deleted successfully'], 200);
     }
 }

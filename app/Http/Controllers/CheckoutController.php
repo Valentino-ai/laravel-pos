@@ -3,100 +3,199 @@
 namespace App\Http\Controllers;
 
 use App\Models\Checkout;
-use App\Models\CheckoutDetail;
-use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class CheckoutController extends Controller
 {
     /**
-     * Create a new checkout.
+     * Show available products for checkout.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAvailableProducts(Request $request)
+    {
+        $search = $request->query('search');
+        $query = \App\Models\Product::with(['size', 'category', 'material']);
+
+        if ($search) {
+            $query->where('name', 'like', '%' . $search . '%');
+        }
+
+        $products = $query->get();
+
+        $final = $products->map(function ($product) {
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'description' => $product->description,
+                'size' => $product->size->name ?? null,
+                'category' => $product->category->name ?? null,
+                'material' => $product->material->name ?? null,
+                'color' => $product->color,
+                'unit_price' => $product->unit_price,
+                'image_url' => $product->image_url,
+            ];
+        });
+
+        return response()->json($final);
+    }
+
+    /**
+     * Create a new checkout session.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function createCheckout(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'products' => 'required|array',
-            'products.*.id' => 'required|exists:products,id',
+            'products.*.product_id' => 'required|uuid|exists:products,id',
             'products.*.quantity' => 'required|integer|min:1',
+            'customer_name' => 'required|string',
         ]);
 
-        $user = Auth::user();
-        $totalAmount = 0;
-
-        // Calculate total amount
-        foreach ($request->products as $productData) {
-            $product = Product::find($productData['id']);
-            $totalAmount += $product->unit_price * $productData['quantity'];
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Create the checkout
-        $checkout = Checkout::create([
-            'user_id' => $user->id,
-            'total_amount' => $totalAmount,
-            'payment_status' => 'pending',
-        ]);
+        $checkoutCode = Checkout::generateUniqueCode();
 
-        // Add products to checkout details
-        foreach ($request->products as $productData) {
-            $product = Product::find($productData['id']);
-            CheckoutDetail::create([
-                'checkout_id' => $checkout->id,
+        $products = collect($request->products)->map(function ($item) {
+            $product = \App\Models\Product::findOrFail($item['product_id']);
+            return [
                 'product_id' => $product->id,
-                'quantity' => $productData['quantity'],
+                'quantity' => $item['quantity'],
                 'unit_price' => $product->unit_price,
-                'subtotal' => $product->unit_price * $productData['quantity'],
-            ]);
+            ];
+        });
+
+        $checkout = Checkout::create([
+            'code' => $checkoutCode,
+            'customer_name' => $request->customer_name,
+            'products' => $products->toJson(),
+        ]);
+
+        return response()->json([
+            'message' => 'Checkout created successfully',
+            'checkout' => $checkout,
+        ], 201);
+    }
+
+    /**
+     * Update the quantity of a product in the checkout.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param string $checkoutId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateCheckoutQuantity(Request $request, $checkoutId)
+    {
+        $validator = Validator::make($request->all(), [
+            'product_id' => 'required|uuid|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        return response()->json([
-            'message' => 'Checkout created successfully.',
-            'checkout' => $checkout->load('checkoutDetails'),
-        ]);
-    }
+        $checkout = Checkout::findOrFail($checkoutId);
+        $products = collect(json_decode($checkout->products, true));
 
-    /**
-     * Get details of a specific checkout.
-     */
-    public function getCheckout($id)
-    {
-        $checkout = Checkout::with('checkoutDetails.product')->findOrFail($id);
+        $products = $products->map(function ($product) use ($request) {
+            if ($product['product_id'] == $request->product_id) {
+                $product['quantity'] = $request->quantity;
+            }
+            return $product;
+        });
+
+        $checkout->products = $products->toJson();
+        $checkout->save();
 
         return response()->json([
+            'message' => 'Checkout updated successfully',
             'checkout' => $checkout,
         ]);
     }
 
     /**
-     * Get all checkouts for the authenticated user.
+     * Get the details of a specific checkout.
+     *
+     * @param string $id
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function getUserCheckouts()
+    public function getCheckoutDetails($id)
     {
-        $user = Auth::user();
-        $checkouts = Checkout::where('user_id', $user->id)->with('checkoutDetails.product')->get();
+        $checkout = Checkout::with('products.product')->findOrFail($id);
 
-        return response()->json([
-            'checkouts' => $checkouts,
-        ]);
+        return response()->json(['checkout' => $checkout]);
     }
 
     /**
-     * Update payment status.
+     * Get a list of checkout history for a specific customer.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function updatePaymentStatus(Request $request, $id)
+    public function getCheckoutHistory(Request $request)
     {
-        $request->validate([
-            'payment_status' => 'required|in:pending,completed,failed',
-        ]);
+        $customerName = $request->query('customer_name');
+        $dateRangeStart = $request->query('start_date');
+        $dateRangeEnd = $request->query('end_date');
 
-        $checkout = Checkout::findOrFail($id);
-        $checkout->update([
-            'payment_status' => $request->payment_status,
-        ]);
+        $query = Checkout::query();
 
-        return response()->json([
-            'message' => 'Payment status updated successfully.',
-            'checkout' => $checkout,
-        ]);
+        if ($customerName) {
+            $query->where('customer_name', 'like', '%' . $customerName . '%');
+        }
+
+        if ($dateRangeStart && $dateRangeEnd) {
+            $query->whereBetween('created_at', [$dateRangeStart, $dateRangeEnd]);
+        } elseif ($dateRangeStart) {
+            $query->where('created_at', '>=', $dateRangeStart);
+        } elseif ($dateRangeEnd) {
+            $query->where('created_at', '<=', $dateRangeEnd);
+        }
+
+        $checkouts = $query->get();
+
+        $history = $checkouts->map(function ($checkout) {
+            $products = json_decode($checkout->products, true);
+            $totalAmount = collect($products)->sum(function ($product) {
+                return $product['unit_price'] * $product['quantity'];
+            });
+
+            return [
+                'checkout_code' => $checkout->code,
+                'customer_name' => $checkout->customer_name,
+                'total_amount' => $totalAmount,
+                'created_at' => $checkout->created_at->toDateTimeString(),
+                'products' => $products,
+            ];
+        });
+
+        return response()->json(['checkouts' => $history]);
+    }
+
+    /**
+     * Delete a specific checkout.
+     *
+     * @param string $code
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy($code)
+    {
+        $checkout = Checkout::where('code', $code)->first();
+
+        if (!$checkout) {
+            return response()->json(['message' => 'Checkout not found'], 404);
+        }
+
+        $checkout->delete();
+
+        return response()->json(['message' => 'Checkout deleted successfully'], 200);
     }
 }

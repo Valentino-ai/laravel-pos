@@ -5,19 +5,16 @@
           <h1>{{ resourceName }} List</h1>
           <p class="card-description"> Manage your {{ resourceName.toLowerCase() }}s here.</p>
   
-          <!-- Circular Loading Indicator -->
           <div v-if="loading" class="text-center">
             <div class="spinner-border text-primary" role="status">
               <span class="sr-only">Loading {{ resourceName.toLowerCase() }}s...</span>
             </div>
           </div>
   
-          <!-- Error Message -->
           <div v-if="errorMessage" class="alert alert-danger">
             {{ errorMessage }}
           </div>
   
-          <!-- Resources Table -->
           <table v-if="!loading && resources.length > 0" class="table table-striped">
             <thead>
               <tr>
@@ -38,7 +35,6 @@
             </tbody>
           </table>
   
-          <!-- No Resources Message -->
           <div v-if="!loading && resources.length === 0" class="text-center p-4 bg-white">
             No {{ resourceName.toLowerCase() }}s available
           </div>

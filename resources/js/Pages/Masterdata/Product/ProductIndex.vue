@@ -3,54 +3,52 @@
     <div>
       <h1>Product List</h1>
 
-      <!-- Search Bar -->
-      <div class="search-bar mb-3">
-        <input
-          type="text"
-          v-model="searchQuery"
-          placeholder="Search by product name..."
-          class="form-control"
-        />
-        <button @click="searchProducts" class="btn btn-primary mt-2">Search</button>
-      </div>
-      
-      <!-- Error Message -->
+      <form @submit.prevent="searchProducts" class="search-bar mb-3 d-flex align-items-center">
+        <input type="text" v-model="searchQuery" placeholder="Search by product name..." class="form-control me-2" />
+        <button type="submit" class="btn btn-primary">
+          <i class="fa fa-search"></i>
+        </button>
+      </form>
+
       <div v-if="errorMessage" class="alert alert-danger">
         {{ errorMessage }}
       </div>
 
-      <!-- Outer Container with Padding and White Background -->
-      <div class="p-4 bg-white"> <!-- Outer container with padding and white background -->
-        
+      <div class="p-4 bg-white">
         <div v-if="isLoading" class="text-center">
           <div class="spinner-border text-primary" role="status">
             <span class="sr-only">Loading...</span>
           </div>
         </div>
-        
-        <!-- Product Table -->
+
         <table v-if="!isLoading && products.data.length > 0" class="table table-striped">
           <thead>
             <tr>
-              <th>No</th>
-              <th>Product Name</th>
-              <th>Size</th>
-              <th>Category</th>
-              <th>Material</th>
-              <th>Color</th>
-              <th>Unit Price</th>
-              <th>Actions</th>
+              <th><strong>No</strong></th>
+              <th><strong>Image</strong></th>
+              <th><strong>Product Name</strong></th>
+              <th><strong>Size</strong></th>
+              <th><strong>Category</strong></th>
+              <th><strong>Material</strong></th>
+              <th><strong>Color</strong></th>
+              <th><strong>Unit Price</strong></th>
+              <th><strong>Actions</strong></th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(product, index) in products.data" :key="product.id">
               <td>{{ index + 1 + (currentPage - 1) * 10 }}</td>
+              <td>
+                <img :src="product.image_url" alt="Product Image" class="img-thumbnail"
+                  style="max-width: 100px; max-height: 100px; cursor: pointer;"
+                  @click="previewImage(product.image_url)" />
+              </td>
               <td>{{ product.name }}</td>
               <td>{{ product.size }}</td>
               <td>{{ product.category }}</td>
               <td>{{ product.material }}</td>
               <td>{{ product.color }}</td>
-              <td>{{ product.unit_price }}</td>
+              <td><strong>Rp. </strong>{{ formatPrice(product.unit_price) }}</td>
               <td>
                 <button @click="editProduct(product.id)" class="btn btn-warning btn-sm me-2">Edit</button>
                 <button @click="deleteProduct(product.id)" class="btn btn-danger btn-sm">Delete</button>
@@ -59,12 +57,10 @@
           </tbody>
         </table>
 
-        <!-- No Products Message -->
         <div v-if="!isLoading && products.data.length === 0" class="text-center">
           <p>No products available</p>
         </div>
 
-        <!-- Pagination Controls -->
         <div v-if="products.total > 0" class="pagination-controls text-center mt-3">
           <button @click="changePage(currentPage - 1)" :disabled="currentPage <= 1" class="btn btn-secondary">
             Previous
@@ -76,14 +72,24 @@
         </div>
 
         <router-link to="/dashboard/product/add" class="btn btn-primary mt-3">Add Product</router-link>
+      </div>
 
-      </div> <!-- End of Outer Container -->
+      <div v-if="showModal" class="modal fade show d-block" tabindex="-1" style="background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Preview</h5>
+              <button type="button" class="btn-close" @click="closeModal"></button>
+            </div>
+            <div class="modal-body text-center">
+              <img :src="selectedImageUrl" alt="Preview" class="img-fluid" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </DashboardLayout>
 </template>
-
-
-
 
 <script setup>
 import { ref, onMounted } from 'vue';
@@ -97,8 +103,17 @@ const isLoading = ref(true);
 const currentPage = ref(1);
 const totalPages = ref(1);
 const searchQuery = ref('');
+const showModal = ref(false);
+const selectedImageUrl = ref('');
 
-onMounted(fetchProducts);
+const formatPrice = (value) => {
+  if (value === undefined || value === null) return 'Rp. 0';
+  let formattedValue = value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  if (formattedValue.includes('.')) {
+    formattedValue = formattedValue.replace(/\.00$/, '');
+  }
+  return formattedValue;
+};
 
 async function fetchProducts(page = currentPage.value, search = searchQuery.value) {
   isLoading.value = true;
@@ -142,4 +157,15 @@ function changePage(page) {
     fetchProducts();
   }
 }
+
+function previewImage(imageUrl) {
+  selectedImageUrl.value = imageUrl;
+  showModal.value = true;
+}
+
+function closeModal() {
+  showModal.value = false;
+}
+
+onMounted(fetchProducts);
 </script>

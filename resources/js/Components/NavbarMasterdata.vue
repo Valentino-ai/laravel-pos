@@ -90,11 +90,8 @@
   };
   
   const logout = () => {
-    // Remove token from localStorage
     localStorage.removeItem('token');
-    // Emit the event to notify parent that user is logged out
     emit('updateAuth', false);
-    // Redirect to home or login page
     router.push('/');
   };
   const scrollToTop = () => {
